@@ -1,0 +1,98 @@
+---
+title: "Dataform"
+description: "API reference for the Dataform class, used to interact with Kissflow dataforms from custom components."
+---
+
+The `Dataform` class lets you programmatically trigger CSV imports and open existing dataform records from within a Kissflow lowcode app.
+
+## Get a Dataform instance
+
+```javascript
+const dfInstance = kf.app.getDataform('dataform_id')
+```
+
+<Note>
+  The `dataform_id` is the `flow_id` of the dataform, not a display name.
+</Note>
+
+---
+
+## Methods
+
+### importCSV
+
+```javascript
+dfInstance.importCSV(defaultValues?: object): Promise<void>
+```
+
+Launches the CSV import popup for this dataform. Users can upload a CSV file and map its columns to the corresponding dataform fields.
+
+#### Parameters
+
+<ParamField path="defaultValues" type="object">
+  Field-value pairs to pre-populate hidden fields during the CSV import. These values are applied to every record imported through the popup and cannot be overridden by the end user.
+</ParamField>
+
+<Note>
+  Default values are optional. Variables and page parameters can also be passed as values.
+</Note>
+
+<Warning>
+  Auto-calculated fields and sequence numbers cannot be set as default values.
+</Warning>
+
+#### Example
+
+```javascript
+const dfInstance = kf.app.getDataform('dataform_id')
+
+let defaultValues = { fieldId: 'value' }
+dfInstance.importCSV(defaultValues)
+```
+
+#### Example — pre-populating a hidden location field
+
+```javascript
+// Get the dataform with the dataform's flow_id
+const dfInstance = kf.app.getDataform('Product_Dataform_A00') // Product_Dataform_A00 is the flow_id
+
+// Set field values for specific fields of the dataform
+let defaultValues = { location: 'India' } // location is the field_id of a field inside the dataform
+
+// Pass the field config into the import SDK method
+dfInstance.importCSV(defaultValues) // All records imported through this importer will have Location set to India
+```
+
+---
+
+### openForm
+
+```javascript
+dfInstance.openForm(item: DataformItem): Promise<void>
+```
+
+Opens the form for an existing dataform record.
+
+#### Parameters
+
+<ParamField path="item" type="object" required>
+  An object identifying the dataform record to open.
+
+  <Expandable title="properties">
+    <ParamField path="item._id" type="string" required>
+      The instance ID of the dataform record.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Warning>
+  The promise rejects with `{ message: "Instance Id (_id) is required" }` if `_id` is not provided.
+</Warning>
+
+#### Example
+
+```javascript
+const dfInstance = kf.app.getDataform('dataform_id')
+
+await dfInstance.openForm({ _id: 'record_instance_id' })
+```

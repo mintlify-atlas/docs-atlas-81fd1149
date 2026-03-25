@@ -1,0 +1,139 @@
+---
+title: "SDK Initialization"
+description: "How to initialize the Kissflow Lowcode JS SDK and what's available on the returned kf instance."
+---
+
+Before calling any SDK method, you must initialize the SDK to obtain a `kf` instance. Initialization establishes a secure `postMessage` channel between your code and the Kissflow platform.
+
+<Note>
+  The SDK can only be initialized when running **inside the Kissflow platform** (i.e., embedded in an iframe). Calling `initialize()` outside of that context returns a rejected Promise with the message: `"SDK can be initialized only inside the Kissflow platform."`
+</Note>
+
+## Initialization methods
+
+The SDK exposes two equivalent methods — use whichever spelling you prefer:
+
+| Method | Notes |
+|---|---|
+| `KFSDK.initialize()` | Primary method |
+| `KFSDK.initialise()` | British-spelling alias — identical behavior |
+
+Both return a `Promise` that resolves with the fully configured `kf` instance.
+
+## Usage patterns
+
+<Tabs>
+  <Tab title="npm module">
+    Install the package first:
+
+    ```bash
+    npm install @kissflow/lowcode-client-sdk
+    ```
+
+    Then initialize in your entry file:
+
+    ```js
+    import KFSDK from '@kissflow/lowcode-client-sdk'
+
+    let kf
+    ;(async function () {
+      kf = await KFSDK.initialize()
+    })()
+    ```
+  </Tab>
+  <Tab title="CDN / script tag">
+    Add the script to your HTML:
+
+    ```html
+    <script src="https://unpkg.com/@kissflow/lowcode-client-sdk@latest/dist/kfsdk.umd.js"></script>
+    ```
+
+    Then initialize after the window loads:
+
+    ```js
+    let kf
+    window.onload = async function () {
+      kf = await window.kf.initialize()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## What's on the kf instance
+
+Once `initialize()` resolves, the `kf` object exposes the following top-level properties:
+
+<CardGroup cols={2}>
+  <Card title="kf.context" icon="arrow-pointer">
+    Polymorphic context object. Returns a different class depending on where the SDK is running — a form, a page, a custom component, etc. See [Execution Context](/concepts/execution-context).
+  </Card>
+  <Card title="kf.app" icon="grid-2">
+    Represents the active Kissflow application. Use it to read/write app variables, open pages, and access dataforms or boards.
+  </Card>
+  <Card title="kf.page" icon="file">
+    Represents the active page. Provides access to page parameters and components.
+  </Card>
+  <Card title="kf.client" icon="bell">
+    UI utilities: show toast messages, confirmation dialogs, and redirect the user to a URL.
+  </Card>
+  <Card title="kf.formatter" icon="sliders">
+    Format raw values into Kissflow-compatible date, datetime, number, currency, and boolean types.
+  </Card>
+  <Card title="kf.user" icon="user">
+    Details of the currently authenticated user.
+  </Card>
+  <Card title="kf.account" icon="building">
+    Details of the active Kissflow account.
+  </Card>
+  <Card title="kf.env" icon="server">
+    Runtime environment details, such as whether the user is on a mobile device.
+  </Card>
+</CardGroup>
+
+## User and account details
+
+User and account information is available immediately after initialization:
+
+```js
+// User fields
+const { _id, Name, Email, AppRoles } = kf.user
+
+// AppRoles is an array of role objects assigned to the user in this app
+console.log(kf.user.AppRoles)
+// [
+//   { "_id": "Ro9mhLyuEFn4", "Name": "Admin" },
+//   { "_id": "Ro9mhI8Yy1_O", "Name": "Employee" }
+// ]
+
+// Account ID
+console.log(kf.account._id)
+
+// Environment
+console.log(kf.env.isMobile) // true | false
+```
+
+<Tip>
+  Store the `kf` instance in a module-level variable so it is accessible throughout your component's lifecycle without re-initializing.
+</Tip>
+
+## Making API calls
+
+The `kf.api()` method proxies HTTP requests through the Kissflow platform, automatically attaching the necessary authentication headers (CSRF token) for Kissflow API calls:
+
+```js
+// Call any Kissflow or external API
+const response = await kf.api(url, {
+  method: 'POST',
+  body: JSON.stringify({ key: 'value' }),
+  headers: { 'Content-Type': 'application/json' }
+})
+```
+
+<Note>
+  Inside a **custom component**, `kf.api()` has a 10-second timeout. Inside **Lowcode scripts**, it uses the native `fetch` API with the CSRF token injected automatically.
+</Note>
+
+## Related pages
+
+- [Execution Context](/concepts/execution-context) — understand what `kf.context` returns in each environment
+- [Custom Components](/concepts/custom-components) — building embeddable mini-apps with the SDK

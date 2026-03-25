@@ -1,0 +1,141 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Kissflow Lowcode JS SDK",
+  "projectDescription": "A JavaScript SDK for building custom components and integrations on the Kissflow low-code platform.",
+  "theme": "luma",
+  "primaryColor": "#848484",
+  "lightColor": "#151515",
+  "darkColor": "#c0c0c0",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/sdk-initialization",
+              "concepts/execution-context",
+              "concepts/custom-components"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/working-with-forms",
+              "guides/working-with-tables",
+              "guides/managing-pages-popups",
+              "guides/data-management"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "SDK Root",
+            "pages": [
+              "api/initialize",
+              "api/user-account",
+              "api/api-method"
+            ]
+          },
+          {
+            "group": "Modules",
+            "pages": [
+              "api/context",
+              "api/application",
+              "api/page",
+              "api/popup",
+              "api/component",
+              "api/client",
+              "api/formatter"
+            ]
+          },
+          {
+            "group": "Data Objects",
+            "pages": [
+              "api/dataform",
+              "api/board",
+              "api/process",
+              "api/decision-table"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Initialize SDK inside Kissflow custom components via npm or CDN script tag",
+    "Context-aware API that adapts to forms, table rows, pages, popups, and custom components",
+    "Form field read/write and table row management (add, delete, get rows)",
+    "Application variable management and page navigation",
+    "Component lifecycle hooks and UI manipulation (show, hide, refresh)",
+    "Popup creation and parameter passing",
+    "Authenticated HTTP requests via kf.api()",
+    "Data formatters for date, datetime, number, currency, and boolean",
+    "Board and dataform CSV import support",
+    "Decision table evaluation",
+    "CLI scaffolding tool (create-kf-component) for bootstrapping custom component projects"
+  ],
+  "publicApiSurface": [
+    "KFSDK.initialize()",
+    "kf.api(url, config)",
+    "kf.user",
+    "kf.account",
+    "kf.env",
+    "kf.context.getField(fieldId)",
+    "kf.context.updateField(fields)",
+    "kf.context.toJSON()",
+    "kf.context.getTable(tableId)",
+    "kf.context.watchParams(callback)",
+    "kf.context.getParent()",
+    "table.addRow(rowObject)",
+    "table.addRows(rows)",
+    "table.deleteRow(rowId)",
+    "table.deleteRows(rowIds)",
+    "table.getRow(rowId)",
+    "table.getRows()",
+    "table.getSelectedRows()",
+    "kf.app.getVariable(key)",
+    "kf.app.setVariable(key, value)",
+    "kf.app.openPage(pageId, params)",
+    "kf.app.getDataform(flowId)",
+    "kf.app.getBoard(flowId)",
+    "kf.app.getProcess(flowId)",
+    "kf.app.getDecisionTable(flowId)",
+    "kf.app.page.getParameter(key)",
+    "kf.app.page.getAllParameters()",
+    "kf.app.page.getComponent(componentId)",
+    "kf.app.page.openPopup(popupId, params)",
+    "kf.app.page.popup.close()",
+    "component.refresh()",
+    "component.show()",
+    "component.hide()",
+    "component.onMount(callback)",
+    "kf.client.showInfo(message)",
+    "kf.client.showConfirm({ title, content })",
+    "kf.client.redirect(url)",
+    "kf.formatter.toDate(date)",
+    "kf.formatter.toDateTime(date)",
+    "kf.formatter.toNumber(value)",
+    "kf.formatter.toCurrency(value, currencyCode)",
+    "kf.formatter.toBoolean(value)",
+    "dataform.importCSV(defaultValues)",
+    "dataform.openForm(item)",
+    "board.importCSV(defaultValues)",
+    "board.openForm(item)",
+    "process.openForm(item)",
+    "decisionTable.evaluate(payload)",
+    "npm create kf-component"
+  ]
+}

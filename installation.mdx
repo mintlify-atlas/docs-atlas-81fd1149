@@ -1,0 +1,84 @@
+---
+title: "Installation"
+description: "Install the Kissflow Lowcode JS SDK via npm or a CDN script tag, and scaffold new projects with the create-kf-component CLI."
+---
+
+## Recommended: scaffold with the CLI
+
+The `create-kf-component` CLI is the fastest way to start a custom component project. It scaffolds a minimal frontend project pre-configured to work inside Kissflow, including build tooling and a sample entry point.
+
+```bash
+npm create kf-component
+```
+
+<Note>
+  Node.js `>=18.14.1` is required to run `create-kf-component`.
+</Note>
+
+Follow the interactive prompts to select a framework (React, Vue, plain JS, etc.) and a project name. Once generated, `cd` into the project directory and run `npm install`.
+
+---
+
+## Install the SDK manually
+
+If you are adding the SDK to an existing project, choose the method that fits your setup:
+
+<CodeGroup>
+
+```bash npm
+npm install @kissflow/lowcode-client-sdk
+```
+
+```html Script tag
+<script src="https://unpkg.com/@kissflow/lowcode-client-sdk@latest/dist/kfsdk.umd.js"></script>
+```
+
+</CodeGroup>
+
+---
+
+## Initialize the SDK
+
+Initialization differs slightly depending on how you loaded the SDK.
+
+<Note>
+  `KFSDK.initialize()` returns a Promise. It can only resolve successfully when the component is running inside the Kissflow platform (embedded as an iframe). Calling it in a standalone browser tab will return a rejected Promise.
+</Note>
+
+<Tabs>
+  <Tab title="npm module">
+    Import the default export and call `initialize()`:
+
+    ```javascript
+    import KFSDK from '@kissflow/lowcode-client-sdk'
+
+    let kf
+    ;(async function () {
+        kf = await KFSDK.initialize()
+    })()
+    ```
+
+    After the Promise resolves, `kf` is the fully initialized SDK object with all namespaces available.
+  </Tab>
+
+  <Tab title="Script tag">
+    When loaded via the CDN `<script>` tag, the SDK attaches itself to `window.kf`. Initialize it after the page loads:
+
+    ```javascript
+    let kf
+    window.onload = async function () {
+        kf = await window.kf.initialize()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Requirements
+
+| Requirement | Version |
+|---|---|
+| Node.js (for CLI scaffolding) | `>=18.14.1` |
+| `@kissflow/lowcode-client-sdk` | `1.0.39` (latest) |
+| Runtime environment | Kissflow platform (iframe context) |

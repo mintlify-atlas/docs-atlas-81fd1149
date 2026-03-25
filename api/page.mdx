@@ -1,0 +1,154 @@
+---
+title: "Page (kf.app.page)"
+description: "Reference for the Page class, accessed via kf.app.page."
+---
+
+`kf.app.page` represents the currently active page in the Kissflow app. Use it to read page parameters, manage page-level variables, access components, and open popups.
+
+```javascript
+// Access the current page's ID
+console.log(kf.app.page._id)
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `_id` | `string` | The ID of the current page. |
+| `popup` | `Popup` | The active [Popup](/api/popup) instance on this page. |
+
+## Methods
+
+### getParameter
+
+Get the value of a single page input parameter.
+
+<ParamField path="key" type="string" required>
+  The ID of the page parameter to retrieve.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;any&gt;">
+  Resolves to the value of the specified parameter.
+</ResponseField>
+
+```javascript
+const value = await kf.app.page.getParameter('parameterId')
+console.log(value)
+```
+
+---
+
+### getAllParameters
+
+Get all page input parameters as a single object.
+
+<ResponseField name="returns" type="Promise&lt;object&gt;">
+  Resolves to an object where each key is a parameter name and each value is its current value.
+</ResponseField>
+
+```javascript
+const allParams = await kf.app.page.getAllParameters()
+// Returns:
+// {
+//   parameterName: "Sample value",
+//   parameterName2: "Sample value 2"
+// }
+```
+
+---
+
+### getVariable
+
+Get the current value of a page-level variable.
+
+<ParamField path="key" type="string" required>
+  The ID of the page variable to retrieve.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;any&gt;">
+  Resolves to the current value of the variable.
+</ResponseField>
+
+```javascript
+const value = await kf.app.page.getVariable('variableId')
+console.log(value)
+```
+
+---
+
+### setVariable
+
+Set the value of one or more page-level variables.
+
+<ParamField path="key" type="string | object" required>
+  Either a variable ID string (use with `value`), or an object of `{ variableId: value }` pairs to set multiple variables at once.
+</ParamField>
+
+<ParamField path="value" type="any">
+  The value to assign. Only used when `key` is a string.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the variable(s) have been updated.
+</ResponseField>
+
+```javascript
+// Set a single variable
+await kf.app.page.setVariable('variableId', 'new value')
+
+// Set multiple variables at once
+await kf.app.page.setVariable({
+  variableId_1: 'value_1',
+  variableId_2: 42
+})
+```
+
+---
+
+### getComponent
+
+Get a `Component` instance by its component ID.
+
+<ParamField path="componentId" type="string" required>
+  The ID of the component on this page.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;Component&gt;">
+  Resolves to a [Component](/api/component) instance.
+</ResponseField>
+
+```javascript
+const component = await kf.app.page.getComponent('componentId')
+
+component.onMount(() => {
+  component.refresh()
+})
+```
+
+---
+
+### openPopup
+
+Open a popup on the current page.
+
+<ParamField path="popupId" type="string" required>
+  The ID of the popup to open.
+</ParamField>
+
+<ParamField path="popupParams" type="object">
+  Optional input parameters to pass into the popup.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;Popup&gt;">
+  Resolves to the [Popup](/api/popup) instance that was opened.
+</ResponseField>
+
+```javascript
+// Open without parameters
+kf.app.page.openPopup('popupId')
+
+// Open with input parameters
+kf.app.page.openPopup('popupId', {
+  inputParam1: 'value'
+})
+```

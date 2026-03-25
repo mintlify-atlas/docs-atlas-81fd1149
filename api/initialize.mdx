@@ -1,0 +1,110 @@
+---
+title: "initialize()"
+description: "Initialize the Kissflow SDK inside a Kissflow platform iframe context."
+---
+
+Initializes the SDK and returns the `kf` instance. Must be called before using any other SDK methods. The SDK can only be initialized inside a Kissflow iframe context.
+
+## Method signature
+
+```ts
+KFSDK.initialize(): Promise<kf>
+```
+
+<Note>
+  `KFSDK.initialise()` is an alias for `KFSDK.initialize()` (British spelling). Both are identical.
+</Note>
+
+## Setup
+
+Choose how you load the SDK based on your project setup.
+
+<CodeGroup>
+
+```bash npm
+npm install @kissflow/lowcode-client-sdk
+```
+
+```html CDN
+<script src="https://unpkg.com/@kissflow/lowcode-client-sdk@latest/dist/kfsdk.umd.js"></script>
+```
+
+</CodeGroup>
+
+Then initialize the SDK in your application:
+
+<CodeGroup>
+
+```js npm
+import KFSDK from '@kissflow/lowcode-client-sdk'
+
+let kf
+;(async function () {
+  kf = await KFSDK.initialize()
+})()
+```
+
+```js CDN
+let kf
+window.onload = async function () {
+  kf = await window.kf.initialize()
+}
+```
+
+</CodeGroup>
+
+## Returns
+
+`Promise<kf>` — Resolves to the SDK instance with the following properties:
+
+<ResponseField name="kf.app" type="Application">
+  The active Kissflow application instance. Use it to read and set app variables, open pages, and access dataforms.
+</ResponseField>
+
+<ResponseField name="kf.page" type="Page">
+  The active page instance (equivalent to `kf.app.page`). Use it to get/set page parameters, access components, and open popups.
+</ResponseField>
+
+<ResponseField name="kf.context" type="Form | TableForm | CustomComponent | Page | Popup | Component">
+  A context-aware instance that reflects where the SDK is running:
+  - `CustomComponent` — inside a custom component iframe
+  - `Form` — inside a Kissflow form (Process, Case, or Dataform)
+  - `TableForm` — inside a table row within a form
+  - `Page` — inside a Kissflow page script
+  - `Popup` — inside a Kissflow popup
+  - `Component` — inside a Kissflow page component script
+</ResponseField>
+
+<ResponseField name="kf.client" type="Client">
+  Client utilities for UI interactions. Includes `showInfo`, `showConfirm`, and `redirect`.
+</ResponseField>
+
+<ResponseField name="kf.formatter" type="Formatter">
+  Data formatters for converting values to Kissflow-compatible formats (dates, numbers, currency, booleans).
+</ResponseField>
+
+<ResponseField name="kf.user" type="object">
+  Details of the currently authenticated user. See [User & Account](/api/user-account).
+</ResponseField>
+
+<ResponseField name="kf.account" type="object">
+  Details of the current Kissflow account. See [User & Account](/api/user-account).
+</ResponseField>
+
+<ResponseField name="kf.env" type="object">
+  Environment details. See [User & Account](/api/user-account).
+
+  - `isMobile` (`boolean`) — `true` if the SDK is running on a mobile device.
+</ResponseField>
+
+## Errors
+
+<Warning>
+  `initialize()` rejects if called outside of a Kissflow platform iframe. Ensure your code runs inside a Kissflow custom component or lowcode context before calling this method.
+</Warning>
+
+The returned promise rejects with the message:
+
+```
+SDK can be initialized only inside the Kissflow platform.
+```

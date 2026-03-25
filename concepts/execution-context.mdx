@@ -1,0 +1,191 @@
+---
+title: "Execution Context"
+description: "kf.context is polymorphic — it returns a different class depending on where the SDK is running inside Kissflow."
+---
+
+`kf.context` is the most environment-sensitive part of the SDK. Rather than exposing a single fixed object, the SDK inspects the runtime context passed by the Kissflow platform at initialization time and constructs the appropriate class automatically.
+
+This means the same property — `kf.context` — gives you a `Form` when you are inside a process or case form, a `Page` when you are in a page script, and a `CustomComponent` when you are in a custom component iframe.
+
+## How context is resolved
+
+When the Kissflow platform initializes the SDK it passes an `SDKContext` payload that includes identifiers such as `formInstanceId`, `tableId`, `tableRowId`, `pageId`, `popupId`, and `componentId`. The SDK uses the following priority order to decide which class to construct:
+
+```
+tableId + tableRowId  →  TableForm
+formInstanceId        →  Form
+popupId               →  Popup
+pageId (no componentId) → Page
+componentId           →  Component
+(custom component iframe) → CustomComponent
+```
+
+## Context types
+
+<AccordionGroup>
+  <Accordion title="CustomComponent" icon="puzzle-piece">
+    **When**: Code running inside a custom component iframe.
+
+    `kf.context` is an instance of `CustomComponent`. Its primary purpose is to receive parameters pushed from the parent Kissflow app.
+
+    | Method | Description |
+    |---|---|
+    | `watchParams(callback)` | Registers a persistent listener that fires whenever the parent app changes the parameters passed to this custom component. The callback receives the updated parameters object. |
+
+    ```js
+    kf.context.watchParams(function (data) {
+      console.log('Parameters updated:', data)
+      // Re-render your component with new data
+    })
+    ```
+
+    See [Custom Components](/concepts/custom-components) for a full guide.
+  </Accordion>
+
+  <Accordion title="Form" icon="table-list">
+    **When**: Code running inside a Kissflow **Process**, **Case**, or **Dataform** form.
+
+    `kf.context` is an instance of `Form`.
+
+    | Method | Signature | Description |
+    |---|---|---|
+    | `getField` | `getField(fieldId)` | Returns the current value of a form field. |
+    | `updateField` | `updateField({ fieldId: value, ... })` | Updates one or more fields in the form. |
+    | `toJSON` | `toJSON()` | Returns the full form data as a plain object. |
+    | `getTable` | `getTable(tableId)` | Returns a `Table` instance for working with child table rows. |
+
+    ```js
+    // Read a field
+    const status = await kf.context.getField('Status')
+
+    // Update fields
+    await kf.context.updateField({
+      Status: 'Approved',
+      ReviewedBy: kf.user.Name
+    })
+
+    // Serialize the whole form
+    const json = await kf.context.toJSON()
+    console.log(json)
+    // { "_id": "Pk4_T1WGWuMe", "Status": "Approved", ... }
+    ```
+  </Accordion>
+
+  <Accordion title="TableForm" icon="table">
+    **When**: Code running in the context of a **table row** inside a Kissflow form.
+
+    `kf.context` is an instance of `TableForm`.
+
+    | Method | Signature | Description |
+    |---|---|---|
+    | `getField` | `getField(fieldId)` | Returns the value of a column in this row. |
+    | `updateField` | `updateField({ fieldId: value, ... })` | Updates one or more columns in this row. |
+    | `toJSON` | `toJSON()` | Returns this row's data as a plain object. |
+    | `getParent` | `getParent()` | Returns the parent `Form` instance so you can act on the main form from within a row. |
+
+    ```js
+    // Update a column in the current row
+    await kf.context.updateField({ UnitPrice: 99.99 })
+
+    // Access the parent form and update a field there
+    const parentForm = kf.context.getParent()
+    await parentForm.updateField({ TotalCost: 299.97 })
+    ```
+  </Accordion>
+
+  <Accordion title="Page" icon="browser">
+    **When**: Code running in a **Kissflow Page** script (when a `pageId` is present and no `componentId`).
+
+    `kf.context` is an instance of `Page`.
+
+    | Method | Signature | Description |
+    |---|---|---|
+    | `getParameter` | `getParameter(parameterId)` | Retrieves a single page input parameter by ID. |
+    | `getAllParameters` | `getAllParameters()` | Returns all page input parameters as an object. |
+    | `getComponent` | `getComponent(componentId)` | Returns the `Component` instance for the given component. |
+    | `openPopup` | `openPopup(popupId, params?)` | Opens a popup by ID, optionally passing input parameters. |
+
+    ```js
+    // Get a specific parameter
+    const userId = await kf.context.getParameter('userId')
+
+    // Get all parameters at once
+    const params = await kf.context.getAllParameters()
+    // { userId: "abc123", mode: "edit" }
+
+    // Access a component on the page
+    const chart = await kf.context.getComponent('SalesChart')
+    await chart.refresh()
+
+    // Open a popup with input parameters
+    kf.context.openPopup('ConfirmPopup', { itemId: '123' })
+    ```
+  </Accordion>
+
+  <Accordion title="Popup" icon="window-restore">
+    **When**: Code running inside a **Kissflow Popup**.
+
+    `kf.context` is an instance of `Popup`.
+
+    | Method | Signature | Description |
+    |---|---|---|
+    | `getParameter` | `getParameter(parameterId)` | Retrieves a single popup input parameter. |
+    | `getAllParameters` | `getAllParameters()` | Returns all popup input parameters as an object. |
+    | `close` | `close()` | Closes the current popup. |
+
+    ```js
+    // Read a parameter passed when the popup was opened
+    const itemId = await kf.context.getParameter('itemId')
+
+    // Close the popup when done
+    kf.context.close()
+    ```
+  </Accordion>
+
+  <Accordion title="Component" icon="cube">
+    **When**: Code running inside a **Kissflow Page component** script (when a `componentId` is present).
+
+    `kf.context` is an instance of `Component`.
+
+    | Method | Signature | Description |
+    |---|---|---|
+    | `refresh` | `refresh()` | Triggers a data refresh on the component. |
+    | `show` | `show()` | Makes the component visible. Deprecated — prefer conditional visibility. |
+    | `hide` | `hide()` | Hides the component. Deprecated — prefer conditional visibility. |
+    | `onMount` | `onMount(callback)` | Registers a one-time callback that fires when the component finishes mounting. Use this to run initialization logic. |
+
+    ```js
+    // Run logic once the component is mounted
+    kf.context.onMount(async () => {
+      await kf.context.refresh()
+    })
+    ```
+
+    <Note>
+      `show()` and `hide()` are deprecated. Use Kissflow's built-in conditional visibility rules instead.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+## Checking context type at runtime
+
+If you write code that may run in multiple context types, check the `type` property:
+
+```js
+const kf = await KFSDK.initialize()
+
+if (kf.context.type === 'CustomComponent') {
+  kf.context.watchParams((data) => {
+    renderComponent(data)
+  })
+} else if (kf.context.type === 'Component') {
+  kf.context.onMount(() => {
+    kf.context.refresh()
+  })
+}
+```
+
+## Related pages
+
+- [SDK Initialization](/concepts/sdk-initialization) — initialize the SDK and obtain the `kf` instance
+- [Custom Components](/concepts/custom-components) — deep dive into the `CustomComponent` context

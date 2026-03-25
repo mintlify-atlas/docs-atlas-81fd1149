@@ -1,0 +1,85 @@
+---
+title: "User & Account"
+description: "Access details about the current user, account, and environment from the kf instance."
+---
+
+After [initializing the SDK](/api/initialize), the `kf` instance exposes `kf.user`, `kf.account`, and `kf.env` with information about the current session.
+
+## kf.user
+
+Contains details about the currently authenticated user.
+
+```js
+const { Name, Email, _id, AppRoles } = kf.user
+```
+
+<ResponseField name="_id" type="string" required>
+  The unique identifier for the user.
+</ResponseField>
+
+<ResponseField name="Name" type="string" required>
+  The user's display name.
+</ResponseField>
+
+<ResponseField name="Email" type="string" required>
+  The user's email address.
+</ResponseField>
+
+<ResponseField name="AppRoles" type="Array<object>" required>
+  All roles assigned to the user in the current app. Each entry is an object with the following shape:
+
+  <Expandable title="Role object properties">
+    <ResponseField name="_id" type="string">
+      The unique identifier for the role.
+    </ResponseField>
+    <ResponseField name="Name" type="string">
+      The display name of the role.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="Role" type="string" deprecated>
+  Deprecated. Use `AppRoles` instead.
+</ResponseField>
+
+### AppRoles example
+
+```js
+console.log(kf.user.AppRoles)
+// [
+//   { "_id": "Ro9mhLyuEFn4", "Name": "Admin" },
+//   { "_id": "Ro9mhI8Yy1_O", "Name": "Employee" },
+//   { "_id": "Ro9mhI8Y89df", "Name": "Test user" }
+// ]
+
+console.log(kf.user.AppRoles[0])
+// { "_id": "Ro9mhLyuEFn4", "Name": "Admin" }
+```
+
+---
+
+## kf.account
+
+Contains details about the current Kissflow account.
+
+```js
+const accountId = kf.account._id
+```
+
+<ResponseField name="_id" type="string" required>
+  The unique identifier for the account.
+</ResponseField>
+
+---
+
+## kf.env
+
+Contains environment information for the current session.
+
+```js
+const isMobile = kf.env.isMobile
+```
+
+<ResponseField name="isMobile" type="boolean" required>
+  `true` if the SDK is running in a mobile browser context, `false` otherwise.
+</ResponseField>

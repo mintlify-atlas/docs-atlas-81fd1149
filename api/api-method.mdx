@@ -1,0 +1,74 @@
+---
+title: "kf.api()"
+description: "Make authenticated HTTP requests from within the Kissflow platform using the SDK."
+---
+
+Makes HTTP requests with authentication handled automatically. When calling Kissflow APIs, the required auth headers are injected for you.
+
+- In **custom components**, requests are proxied via `postMessage` to the parent Kissflow window.
+- In the **lowcode context**, requests use `fetch` with a CSRF token injected as the `X-Csrf-Token` header.
+
+## Method signature
+
+```ts
+kf.api(url: string, config?: FetchOptions): Promise<any>
+```
+
+## Parameters
+
+<ParamField path="url" type="string" required>
+  The URL to send the request to. Can be a Kissflow API endpoint or any external URL.
+</ParamField>
+
+<ParamField path="config" type="object">
+  Optional request configuration.
+
+  <Expandable title="FetchOptions properties">
+    <ParamField path="method" type="string">
+      The HTTP method to use. Defaults to `GET` when not specified.
+
+      Examples: `"GET"`, `"POST"`, `"PUT"`, `"DELETE"`
+    </ParamField>
+    <ParamField path="body" type="string | object">
+      The request body. For JSON payloads, pass a JSON string using `JSON.stringify()`.
+    </ParamField>
+    <ParamField path="headers" type="object">
+      Additional request headers to include. Auth headers are always injected automatically and do not need to be set here.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Returns
+
+`Promise<any>` — Resolves with:
+- The parsed JSON body if the response `Content-Type` is `application/json`.
+- The raw `Response` object otherwise.
+
+## Examples
+
+```js
+// GET request
+const data = await kf.api('https://api.example.com/data')
+
+// POST request
+const result = await kf.api('https://api.example.com/submit', {
+  method: 'POST',
+  body: JSON.stringify({ key: 'value' }),
+  headers: { 'Content-Type': 'application/json' }
+})
+
+// Promise style
+kf.api(url, config).then((res) => {
+  console.log(res)
+})
+```
+
+## Notes
+
+<Note>
+  Authentication headers are included automatically when calling Kissflow APIs. You do not need to set them manually.
+</Note>
+
+<Warning>
+  In custom components, `kf.api()` has a **10-second timeout limit**. Requests that exceed this limit will fail.
+</Warning>

@@ -1,0 +1,166 @@
+---
+title: "Custom Components"
+description: "Build and embed custom frontend mini-apps inside Kissflow applications using the Lowcode JS SDK."
+---
+
+Custom components let you embed fully custom frontend code — React, Vue, vanilla JS, or any other framework — directly inside a Kissflow application. Each custom component runs in its own sandboxed `<iframe>` and communicates with the parent Kissflow app through the SDK.
+
+## How they work
+
+```
+┌────────────────────────────────────┐
+│          Kissflow App (Page)        │
+│                                    │
+│   ┌────────────────────────────┐   │
+│   │  Custom Component (iframe) │   │
+│   │                            │   │
+│   │  Your code runs here       │   │
+│   │  kf.context → CustomComponent  │
+│   └────────────────────────────┘   │
+└────────────────────────────────────┘
+```
+
+The Kissflow app can pass **parameters** into your component. When those parameters change (e.g. the user selects a different record), the SDK calls your registered listener so you can re-render.
+
+## Scaffolding a project
+
+The `create-kf-component` CLI generates a ready-to-use project with the SDK already wired up:
+
+```bash
+npm create kf-component
+```
+
+Follow the prompts to choose a name and framework. The generated project includes:
+
+- The `@kissflow/lowcode-client-sdk` dependency
+- An entry file with SDK initialization
+- A build configuration that produces a deployable bundle
+
+## Initializing the SDK inside a custom component
+
+Custom components use the same `initialize()` call as any other SDK consumer. When running in a custom component iframe, `kf.context` will be an instance of `CustomComponent`.
+
+<Tabs>
+  <Tab title="npm module">
+    ```js
+    import KFSDK from '@kissflow/lowcode-client-sdk'
+
+    let kf
+
+    ;(async function () {
+      kf = await KFSDK.initialize()
+
+      // kf.context is CustomComponent here
+      kf.context.watchParams(function (data) {
+        console.log('Received parameters:', data)
+        renderMyComponent(data)
+      })
+    })()
+    ```
+  </Tab>
+  <Tab title="CDN / script tag">
+    ```html
+    <script src="https://unpkg.com/@kissflow/lowcode-client-sdk@latest/dist/kfsdk.umd.js"></script>
+    <script>
+      let kf
+      window.onload = async function () {
+        kf = await window.kf.initialize()
+
+        kf.context.watchParams(function (data) {
+          console.log('Received parameters:', data)
+          renderMyComponent(data)
+        })
+      }
+    </script>
+    ```
+  </Tab>
+</Tabs>
+
+## Reacting to parameter changes
+
+`kf.context.watchParams()` registers a **persistent** listener. It fires every time the parent Kissflow app updates the parameters passed to your component — not just once.
+
+```js
+kf.context.watchParams(function (data) {
+  console.log(data) // data contains parameters passed from the Kissflow app
+})
+```
+
+<Note>
+  `watchParams` is non-blocking and does not return a Promise. The callback will be called each time parameters change for as long as the component is alive.
+</Note>
+
+A typical pattern is to call `watchParams` immediately after initialization and drive all rendering from the callback:
+
+```js
+import KFSDK from '@kissflow/lowcode-client-sdk'
+
+let kf
+
+;(async function init() {
+  kf = await KFSDK.initialize()
+
+  // Render with the initial parameters
+  kf.context.watchParams(function (params) {
+    const { recordId, mode } = params
+
+    if (mode === 'view') {
+      renderViewMode(recordId)
+    } else if (mode === 'edit') {
+      renderEditMode(recordId)
+    }
+  })
+})()
+```
+
+## Accessing user and account context
+
+After initialization, the `kf` object also exposes the current user, account, and environment — useful for personalizing your component's UI:
+
+```js
+kf = await KFSDK.initialize()
+
+const { Name, Email, AppRoles } = kf.user
+const { _id: accountId } = kf.account
+const { isMobile } = kf.env
+
+console.log(`Hello, ${Name}!`)
+console.log('Running on mobile:', isMobile)
+```
+
+## Making API calls from a custom component
+
+Use `kf.api()` to call Kissflow APIs or external endpoints. In a custom component context the method proxies requests through the parent platform, so Kissflow authentication headers are applied automatically:
+
+```js
+const data = await kf.api('https://api.example.com/items', {
+  method: 'GET'
+})
+console.log(data)
+```
+
+<Note>
+  `kf.api()` in custom components has a **10-second timeout**. For long-running requests, handle the rejection and show appropriate feedback to the user.
+</Note>
+
+## Summary
+
+<Steps>
+  <Step title="Scaffold your project">
+    Run `npm create kf-component` and follow the prompts.
+  </Step>
+  <Step title="Initialize the SDK">
+    Call `KFSDK.initialize()` (or `window.kf.initialize()` for the CDN build) and await the result.
+  </Step>
+  <Step title="Watch for parameter changes">
+    Call `kf.context.watchParams(callback)` to receive parameters from the parent Kissflow app and drive your rendering logic.
+  </Step>
+  <Step title="Use the rest of the SDK">
+    Access `kf.user`, `kf.account`, `kf.env`, and `kf.api()` as needed from within your component.
+  </Step>
+</Steps>
+
+## Related pages
+
+- [SDK Initialization](/concepts/sdk-initialization) — full reference for `initialize()` and the `kf` instance
+- [Execution Context](/concepts/execution-context) — how `kf.context` changes depending on where the SDK runs

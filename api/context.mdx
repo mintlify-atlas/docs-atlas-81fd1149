@@ -1,0 +1,257 @@
+---
+title: "Context (kf.context)"
+description: "Polymorphic context object that reflects the environment where the SDK is running."
+---
+
+`kf.context` is polymorphic — the class it returns depends on where in the Kissflow app your script is executing. You do not choose the context type; the SDK detects it automatically from the execution environment.
+
+| Execution environment | Context type returned |
+| --- | --- |
+| Process, Case, or Dataform | `Form` |
+| Inside a table row | `TableForm` |
+| Inside a custom component iframe | `CustomComponent` |
+| Kissflow page script | `Page` |
+| Kissflow popup | `Popup` |
+| Page component script | `Component` |
+
+<Tabs>
+  <Tab title="Form context">
+    `kf.context` returns a `Form` instance when code runs inside a Kissflow Process, Case, or Dataform.
+
+    ---
+
+    ### getField
+
+    Get the current value of a form field.
+
+    <ParamField path="fieldId" type="string" required>
+      The ID of the form field to read.
+    </ParamField>
+
+    <ResponseField name="returns" type="Promise&lt;any&gt;">
+      Resolves to the current value of the field.
+    </ResponseField>
+
+    ```javascript
+    // Promise style
+    kf.context.getField('fieldId').then((value) => {
+      console.log(value)
+    })
+
+    // async/await style
+    const value = await kf.context.getField('fieldId')
+    ```
+
+    ---
+
+    ### updateField
+
+    Update one or more fields in the form.
+
+    <ParamField path="fields" type="object" required>
+      An object mapping field IDs to their new values. Multiple fields can be updated in one call.
+    </ParamField>
+
+    <ResponseField name="returns" type="Promise&lt;void&gt;">
+      Resolves when the update is complete.
+    </ResponseField>
+
+    ```javascript
+    await kf.context.updateField({
+      fieldId_1: 'new value',
+      fieldId_2: 42
+    })
+    ```
+
+    ---
+
+    ### toJSON
+
+    Serialize the entire form to a JSON object.
+
+    <ResponseField name="returns" type="Promise&lt;object&gt;">
+      Resolves to a plain object containing all field values and metadata.
+    </ResponseField>
+
+    ```javascript
+    const json = await kf.context.toJSON()
+    // Example output:
+    // {
+    //   "Untitled_Field": "testing",
+    //   "_created_at": "2022-03-01T03:04:09Z",
+    //   "_flow_name": "form events",
+    //   "_id": "Pk4_T1WGWuMe",
+    //   "_modified_at": "2022-03-01T03:04:09Z"
+    // }
+    ```
+
+    ---
+
+    ### getTable
+
+    Get a child `Table` instance to interact with a table component inside the form.
+
+    <ParamField path="tableId" type="string" required>
+      The ID of the child table component.
+    </ParamField>
+
+    <ResponseField name="returns" type="Table">
+      A `Table` instance with methods to read and modify rows.
+    </ResponseField>
+
+    ```javascript
+    const table = kf.context.getTable('tableId')
+
+    // Add a row
+    await table.addRow({ columnId1: 'value', columnId2: 'value' })
+
+    // Add multiple rows
+    await table.addRows([
+      { columnId1: 'value1', columnId2: 'value2' },
+      { columnId1: 'value3', columnId2: 'value4' }
+    ])
+
+    // Get all rows (returns an array of TableForm instances)
+    const rows = await table.getRows()
+
+    // Get a specific row by ID
+    const row = table.getRow('rowId')
+
+    // Get selected rows
+    const selectedRows = await table.getSelectedRows()
+
+    // Delete a row
+    await table.deleteRow('rowId')
+
+    // Delete multiple rows
+    await table.deleteRows(['rowId1', 'rowId2', 'rowId3'])
+
+    // Serialize table to JSON
+    const json = await table.toJSON()
+    // Example output:
+    // [
+    //   {
+    //     "Untitled_Field": "row 1",
+    //     "_id": "Pk4_T1WGWuMe",
+    //     ...
+    //   },
+    //   ...
+    // ]
+    ```
+  </Tab>
+
+  <Tab title="TableForm context">
+    `kf.context` returns a `TableForm` instance when code runs inside a table row (e.g., in a row-level event).
+
+    ---
+
+    ### getField
+
+    Get the value of a field in this table row.
+
+    <ParamField path="fieldId" type="string" required>
+      The ID of the field within the table row.
+    </ParamField>
+
+    <ResponseField name="returns" type="Promise&lt;any&gt;">
+      Resolves to the current field value.
+    </ResponseField>
+
+    ```javascript
+    // Promise style
+    kf.context.getField('fieldId').then((value) => {
+      console.log(value)
+    })
+
+    // async/await style
+    const value = await kf.context.getField('fieldId')
+    ```
+
+    ---
+
+    ### updateField
+
+    Update one or more fields in this table row.
+
+    <ParamField path="fields" type="object" required>
+      An object mapping field IDs to their new values.
+    </ParamField>
+
+    <ResponseField name="returns" type="Promise&lt;void&gt;">
+      Resolves when the update is complete.
+    </ResponseField>
+
+    ```javascript
+    await kf.context.updateField({
+      fieldId_1: 'new value',
+      fieldId_2: 42
+    })
+    ```
+
+    ---
+
+    ### toJSON
+
+    Serialize this table row to a JSON object.
+
+    <ResponseField name="returns" type="Promise&lt;object&gt;">
+      Resolves to a plain object with the row's field values and metadata.
+    </ResponseField>
+
+    ```javascript
+    const json = await kf.context.toJSON()
+    // Example output:
+    // {
+    //   "Untitled_Field": "testing",
+    //   "_created_at": "2022-03-01T03:04:09Z",
+    //   "_flow_name": "form events",
+    //   "_id": "Pk4_T1WGWuMe",
+    //   "_modified_at": "2022-03-01T03:04:09Z"
+    // }
+    ```
+
+    ---
+
+    ### getParent
+
+    Get the parent `Form` instance to interact with the main form that contains this table.
+
+    <ResponseField name="returns" type="Form">
+      The parent `Form` instance.
+    </ResponseField>
+
+    ```javascript
+    const mainForm = kf.context.getParent()
+
+    // Update a field on the parent form
+    await mainForm.updateField({ fieldId_1: 'value' })
+
+    // Read a field on the parent form
+    const value = await mainForm.getField('fieldId')
+    ```
+  </Tab>
+
+  <Tab title="CustomComponent context">
+    `kf.context` returns a `CustomComponent` instance when code runs inside a custom component iframe.
+
+    ---
+
+    ### watchParams
+
+    Register a callback that fires whenever the parameters passed to this custom component change from the Kissflow app.
+
+    <ParamField path="callback" type="(data: any) => void" required>
+      A function called each time the component's parameters are updated. Receives the new parameter data as its argument.
+    </ParamField>
+
+    ```javascript
+    kf.context.watchParams(function (data) {
+      console.log('Params updated:', data)
+    })
+    ```
+
+    <Note>
+      `watchParams` fires on every parameter change, not just once. The callback is invoked continuously for the lifetime of the component.
+    </Note>
+  </Tab>
+</Tabs>

@@ -1,0 +1,54 @@
+---
+title: "Process"
+description: "API reference for the Process class, used to open process instance forms from custom components."
+---
+
+The `Process` class lets you programmatically open a process instance form at a specific activity from within a Kissflow lowcode app.
+
+## Get a Process instance
+
+```javascript
+const processInstance = kf.app.getProcess('flow_id')
+```
+
+---
+
+## Methods
+
+### openForm
+
+```javascript
+processInstance.openForm(item: ProcessItem): Promise<void>
+```
+
+Opens the form for a process instance at a specific activity.
+
+#### Parameters
+
+<ParamField path="item" type="object" required>
+  An object identifying the process instance and activity to open.
+
+  <Expandable title="properties">
+    <ParamField path="item._id" type="string" required>
+      The process instance ID.
+    </ParamField>
+    <ParamField path="item._activity_instance_id" type="string" required>
+      The activity instance ID within the process.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Warning>
+  Both `_id` and `_activity_instance_id` are required. The promise rejects with `{ message: "Instance Id(_id) and Activity Instance Id(_activity_instance_id) are required" }` if either field is missing.
+</Warning>
+
+#### Example
+
+```javascript
+const processInstance = kf.app.getProcess('my_flow_id')
+
+await processInstance.openForm({
+  _id: 'instanceId',
+  _activity_instance_id: 'activityInstanceId'
+})
+```

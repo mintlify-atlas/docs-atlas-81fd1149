@@ -1,0 +1,106 @@
+---
+title: "Working with Forms"
+description: "Read and update field values, serialize form data, and access child tables using kf.context inside Kissflow forms."
+---
+
+When a custom component runs inside a Kissflow form — whether that form belongs to a Process, Case, or Dataform — `kf.context` is automatically set to a `Form` instance. You can use it to read field values, write new values, get the full form as JSON, and retrieve child table instances.
+
+<Note>
+  `kf.context` is context-sensitive. Inside a form it returns a `Form` class. Inside a standalone custom component it returns a `CustomComponent` class instead. This guide covers the `Form` context only.
+</Note>
+
+## Getting a field value
+
+Use `getField` to read the current value of any field on the form. It returns a Promise that resolves to the field's current value.
+
+```javascript
+// Promise-based
+kf.context.getField('fieldId').then((value) => {
+  console.log(value)
+})
+
+// async/await
+const value = await kf.context.getField('fieldId')
+```
+
+## Updating field values
+
+Use `updateField` to set one or more field values in a single call. Pass an object whose keys are field IDs and whose values are the new values to set.
+
+```javascript
+// Update a single field
+kf.context.updateField({ Status: 'Approved' })
+
+// Update multiple fields at once
+kf.context.updateField({
+  Status: 'Approved',
+  Reviewed_By: 'Jane Smith',
+  Review_Date: '2024-06-01'
+})
+```
+
+<Tip>
+  Always batch field updates into a single `updateField` call rather than calling it multiple times. This reduces round-trips and keeps the form state consistent.
+</Tip>
+
+## Serializing the form to JSON
+
+`toJSON` returns a Promise that resolves to the full form data as a plain object. This is useful for reading all fields at once or passing data to an external service.
+
+```javascript
+const json = await kf.context.toJSON()
+console.log(json)
+```
+
+Example output:
+
+```json
+{
+  "Untitled_Field": "testing",
+  "_created_at": "2022-03-01T03:04:09Z",
+  "_flow_name": "form events",
+  "_id": "Pk4_T1WGWuMe",
+  "_modified_at": "2022-03-01T03:04:09Z"
+}
+```
+
+## Accessing a child table
+
+Forms can contain child tables (also called form tables). Call `getTable` with the table's field ID to get a `Table` instance. All row-level operations are performed on that instance.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+```
+
+See [Working with Tables](/guides/working-with-tables) for the full list of methods available on a `Table` instance.
+
+## Complete example
+
+The example below reads a quantity field, doubles it, writes the result back, and logs the full form JSON.
+
+```javascript
+async function doubleQuantity() {
+  // Read current value
+  const qty = await kf.context.getField('Quantity')
+
+  // Write updated value
+  await kf.context.updateField({ Quantity: qty * 2 })
+
+  // Log updated form state
+  const json = await kf.context.toJSON()
+  console.log('Updated form:', json)
+}
+
+doubleQuantity()
+```
+
+## API reference
+
+| Method | Returns | Description |
+|---|---|---|
+| `kf.context.getField(fieldId)` | `Promise<any>` | Returns the current value of the specified field. |
+| `kf.context.updateField(fields)` | `Promise<void>` | Updates one or more fields. Pass `{ fieldId: value }` pairs. |
+| `kf.context.toJSON()` | `Promise<object>` | Returns the full form data as a plain object. |
+| `kf.context.getTable(tableId)` | `Table` | Returns a `Table` instance for the specified child table. |
+
+See also the [Application API reference](/api/application) and [Context API reference](/api/context).

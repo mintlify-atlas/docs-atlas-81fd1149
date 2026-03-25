@@ -1,0 +1,227 @@
+---
+title: "Managing Pages and Popups"
+description: "Navigate between pages, open and close popups, and control page components from custom component code."
+---
+
+The `kf.app` object represents the active Kissflow application. From it you can open other pages, read page parameters, open and close popups, and interact with individual page components.
+
+## Page navigation
+
+### Open a page
+
+Call `kf.app.openPage` with the target page's ID. Optionally pass an object of input parameters to send to that page.
+
+```javascript
+// Open a page without parameters
+kf.app.openPage('Page_A00')
+
+// Open a page with parameters
+const pageInputParameters = {
+  param1: 'value1',
+  param2: 42
+}
+kf.app.openPage('Page_A00', pageInputParameters)
+```
+
+<Note>
+  Page input parameters are optional. Only pass them if the target page is configured to accept parameters.
+</Note>
+
+### Get the current page
+
+`kf.app.page` returns the active `Page` instance. Use `._id` to read its ID.
+
+```javascript
+const currentPageId = kf.app.page._id
+console.log('Current page:', currentPageId)
+```
+
+### Read page parameters
+
+Use `getParameter` to read a single parameter by its ID, or `getAllParameters` to read all of them at once.
+
+```javascript
+// Single parameter
+const value = await kf.app.page.getParameter('customerId')
+
+// All parameters
+const allParams = await kf.app.page.getAllParameters()
+// Returns an object:
+// {
+//   parameterName: "Sample value",
+//   parameterName2: "Sample value 2"
+// }
+```
+
+## Popups
+
+### Open a popup
+
+Call `openPopup` on the current page with the popup's ID. Optionally pass input parameters.
+
+```javascript
+// Open a popup without parameters
+kf.app.page.openPopup('greetPopup')
+
+// Open a popup with parameters
+kf.app.page.openPopup('greetPopup', { inputParam1: 'Hello!' })
+```
+
+### Access the active popup
+
+`kf.app.page.popup` returns the active `Popup` instance. Use it to read parameters or close the popup.
+
+```javascript
+const activePopup = kf.app.page.popup
+console.log('Active popup ID:', activePopup._id)
+```
+
+### Read popup parameters
+
+```javascript
+// Single parameter
+const value = await kf.app.page.popup.getParameter('parameterId')
+
+// All parameters
+const allParams = await kf.app.page.popup.getAllParameters()
+// Returns an object:
+// {
+//   parameterName: "Sample value",
+//   parameterName2: "Sample value 2"
+// }
+```
+
+### Close a popup
+
+```javascript
+// Close the currently active popup
+kf.app.page.popup.close()
+
+// Close using a previously stored popup instance
+const greetPopup = kf.app.page.popup
+// ... later ...
+greetPopup.close()
+```
+
+## Components
+
+Use `getComponent` on a page or popup to get a `Component` instance by its ID.
+
+```javascript
+const component = await kf.app.page.getComponent('componentId')
+```
+
+### Refresh a component
+
+Forces the component to re-fetch its data and re-render.
+
+```javascript
+component.refresh()
+```
+
+### Show and hide a component
+
+<Warning>
+  `show()` and `hide()` are deprecated. Use condition-based visibility in the Kissflow application builder instead.
+</Warning>
+
+```javascript
+component.show() // shows a previously hidden component
+component.hide() // hides the component
+```
+
+### onMount lifecycle hook
+
+The `onMount` callback fires once, immediately after the component is mounted on the page. Use it for any setup logic that must run on page load, such as setting an active tab.
+
+```javascript
+const component = await kf.app.page.getComponent('tabsComponentId')
+
+component.onMount(() => {
+  // This runs once when the component is ready
+  component.setActiveTab(2)
+})
+```
+
+<Note>
+  Any component-specific methods you want to run on page load must be called inside `onMount`. Calling them before the component is mounted will have no effect.
+</Note>
+
+### Tab component
+
+Use `setActiveTab` to programmatically activate a specific tab. Tabs are numbered starting from 1.
+
+```javascript
+const tabsComponent = await kf.app.page.getComponent('mainTabs')
+
+tabsComponent.onMount(() => {
+  tabsComponent.setActiveTab(2) // activates the second tab
+})
+```
+
+## Complete example
+
+The example below reads a parameter from the current page, opens a confirmation popup, and — when the user closes it — navigates to a new page.
+
+```javascript
+async function handleReview() {
+  // Read a parameter from the current page
+  const orderId = await kf.app.page.getParameter('orderId')
+  console.log('Reviewing order:', orderId)
+
+  // Open a confirmation popup with the order ID
+  kf.app.page.openPopup('confirmPopup', { orderId })
+}
+
+async function onConfirm() {
+  // Close the active popup
+  kf.app.page.popup.close()
+
+  // Navigate to the summary page
+  kf.app.openPage('SummaryPage_A00')
+}
+
+handleReview()
+```
+
+## API reference
+
+### Application (`kf.app`)
+
+| Method | Returns | Description |
+|---|---|---|
+| `kf.app.openPage(pageId, params?)` | `Promise<void>` | Navigates to the specified page, optionally passing parameters. |
+| `kf.app.page` | `Page` | The currently active page instance. |
+
+### Page (`kf.app.page`)
+
+| Method | Returns | Description |
+|---|---|---|
+| `page._id` | `string` | The ID of the current page. |
+| `page.getParameter(key)` | `Promise<any>` | Returns the value of a single page parameter. |
+| `page.getAllParameters()` | `Promise<object>` | Returns all page parameters as a plain object. |
+| `page.openPopup(popupId, params?)` | `Promise<void>` | Opens the specified popup, optionally passing parameters. |
+| `page.popup` | `Popup` | The currently active popup instance. |
+| `page.getComponent(componentId)` | `Promise<Component>` | Returns a `Component` instance for the given component. |
+
+### Popup
+
+| Method | Returns | Description |
+|---|---|---|
+| `popup._id` | `string` | The ID of the popup. |
+| `popup.getParameter(key)` | `Promise<any>` | Returns the value of a single popup parameter. |
+| `popup.getAllParameters()` | `Promise<object>` | Returns all popup parameters as a plain object. |
+| `popup.close()` | `Promise<void>` | Closes the popup. |
+| `popup.getComponent(componentId)` | `Promise<Component>` | Returns a `Component` inside this popup. |
+
+### Component
+
+| Method | Returns | Description |
+|---|---|---|
+| `component.refresh()` | `Promise<void>` | Re-fetches data and re-renders the component. |
+| `component.show()` | `Promise<void>` | Shows the component. Deprecated — use condition visibility. |
+| `component.hide()` | `Promise<void>` | Hides the component. Deprecated — use condition visibility. |
+| `component.onMount(callback)` | `void` | Registers a one-time callback that fires when the component mounts. |
+| `component.setActiveTab(n)` | `Promise<void>` | Activates the nth tab (1-indexed). Tab components only. |
+
+See also the [Application API reference](/api/application).

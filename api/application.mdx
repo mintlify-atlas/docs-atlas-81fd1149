@@ -1,0 +1,174 @@
+---
+title: "Application (kf.app)"
+description: "Reference for the Application class, accessed via kf.app."
+---
+
+`kf.app` represents the currently active Kissflow app. It exposes app-level variables, navigation, and access to flows within the app.
+
+```javascript
+// Access the current app's ID
+console.log(kf.app._id)
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `_id` | `string` | The ID of the current Kissflow app. |
+| `page` | `Page` | The currently active [Page](/api/page) instance. |
+
+## Methods
+
+### getVariable
+
+Get the current value of an app-level variable.
+
+<ParamField path="key" type="string" required>
+  The ID of the app variable to retrieve.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;any&gt;">
+  Resolves to the current value of the variable.
+</ResponseField>
+
+```javascript
+const value = await kf.app.getVariable('variableId')
+console.log(value)
+```
+
+---
+
+### setVariable
+
+Set the value of one or more app-level variables.
+
+<ParamField path="key" type="string | object" required>
+  Either a variable ID string (use with `value`), or an object of `{ variableId: value }` pairs to set multiple variables at once.
+</ParamField>
+
+<ParamField path="value" type="any">
+  The value to assign. Only used when `key` is a string.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the variable(s) have been updated.
+</ResponseField>
+
+```javascript
+// Set a single variable
+await kf.app.setVariable('variableId', 'new value')
+
+// Set multiple variables at once
+await kf.app.setVariable({
+  variableId_1: 'value_1',
+  variableId_2: 3345
+})
+```
+
+---
+
+### openPage
+
+Navigate to a different page within the app.
+
+<ParamField path="pageId" type="string" required>
+  The ID of the page to navigate to.
+</ParamField>
+
+<ParamField path="pageParams" type="object">
+  Optional input parameters to pass to the target page.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when navigation is initiated.
+</ResponseField>
+
+```javascript
+// Navigate without parameters
+kf.app.openPage('pageId')
+
+// Navigate with input parameters
+const pageInputParameters = {
+  param1: 'value1',
+  param2: 'value2'
+}
+kf.app.openPage('pageId', pageInputParameters)
+```
+
+---
+
+### getDataform
+
+Get a `Dataform` instance by its flow ID.
+
+<ParamField path="flowId" type="string" required>
+  The flow ID of the Dataform.
+</ParamField>
+
+<ResponseField name="returns" type="Dataform">
+  A `Dataform` instance.
+</ResponseField>
+
+```javascript
+const dfInstance = kf.app.getDataform('dataform_id')
+
+// Launch the import CSV popup for this dataform
+dfInstance.importCSV({ location: 'India' })
+```
+
+---
+
+### getBoard
+
+Get a `Board` instance by its flow ID.
+
+<ParamField path="flowId" type="string" required>
+  The flow ID of the Board (Case).
+</ParamField>
+
+<ResponseField name="returns" type="Board">
+  A `Board` instance.
+</ResponseField>
+
+```javascript
+const boardInstance = kf.app.getBoard('case_id')
+
+// Launch the import CSV modal for this board
+boardInstance.importCSV({ location: 'India' })
+```
+
+---
+
+### getProcess
+
+Get a `Process` instance by its flow ID.
+
+<ParamField path="flowId" type="string" required>
+  The flow ID of the Process.
+</ParamField>
+
+<ResponseField name="returns" type="Process">
+  A `Process` instance.
+</ResponseField>
+
+```javascript
+const processInstance = kf.app.getProcess('process_id')
+```
+
+---
+
+### getDecisionTable
+
+Get a `DecisionTable` instance by its flow ID.
+
+<ParamField path="flowId" type="string" required>
+  The flow ID of the Decision Table.
+</ParamField>
+
+<ResponseField name="returns" type="DecisionTable">
+  A `DecisionTable` instance.
+</ResponseField>
+
+```javascript
+const dtInstance = kf.app.getDecisionTable('decision_table_id')
+```

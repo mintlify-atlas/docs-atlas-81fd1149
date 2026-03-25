@@ -1,0 +1,104 @@
+---
+title: "Board"
+description: "API reference for the Board class, used to interact with Kissflow case management boards from custom components."
+---
+
+The `Board` class lets you programmatically trigger CSV imports and open existing board items from within a Kissflow lowcode app.
+
+## Get a Board instance
+
+```javascript
+const boardInstance = kf.app.getBoard('case_id')
+```
+
+<Note>
+  The `case_id` is the `flow_id` of the board.
+</Note>
+
+---
+
+## Methods
+
+### importCSV
+
+```javascript
+boardInstance.importCSV(defaultValues?: object): Promise<void>
+```
+
+Launches the CSV import modal for this board. Users can upload a CSV file and map its columns to the corresponding board fields.
+
+#### Parameters
+
+<ParamField path="defaultValues" type="object">
+  Field-value pairs to pre-populate hidden fields during the CSV import. These values are applied to every record imported through the modal and cannot be overridden by the end user.
+</ParamField>
+
+<Note>
+  Default values are optional. Variables and page parameters can also be passed as values.
+</Note>
+
+<Warning>
+  Auto-calculated fields and sequence numbers cannot be set as default values.
+</Warning>
+
+#### Example
+
+```javascript
+const boardInstance = kf.app.getBoard('case_id')
+
+let defaultValues = { fieldId: 'value' }
+boardInstance.importCSV(defaultValues)
+```
+
+#### Example — pre-populating a hidden location field
+
+```javascript
+// Get the board with the board's flow_id
+const boardInstance = kf.app.getBoard('Asset_Tracking_A00') // Asset_Tracking_A00 is the flow_id
+
+// Set field values for specific fields of the board
+let defaultValues = { location: 'India' } // location is the field_id of a field inside the board
+
+// Pass the field config into the import SDK method
+boardInstance.importCSV(defaultValues) // All records imported through this importer will have Location set to India
+```
+
+---
+
+### openForm
+
+```javascript
+boardInstance.openForm(item: BoardItem): Promise<void>
+```
+
+Opens the form for an existing board item.
+
+#### Parameters
+
+<ParamField path="item" type="object" required>
+  An object identifying the board item to open.
+
+  <Expandable title="properties">
+    <ParamField path="item._id" type="string" required>
+      The instance ID of the board item.
+    </ParamField>
+    <ParamField path="item._view_id" type="string" required>
+      The view ID associated with the board item.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Warning>
+  The promise rejects with `{ message: "Instance Id (_id) is required" }` if `_id` is not provided.
+</Warning>
+
+#### Example
+
+```javascript
+const boardInstance = kf.app.getBoard('case_id')
+
+await boardInstance.openForm({
+  _id: 'item_instance_id',
+  _view_id: 'view_id'
+})
+```

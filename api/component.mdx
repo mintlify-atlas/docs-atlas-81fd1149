@@ -1,0 +1,138 @@
+---
+title: "Component"
+description: "Reference for the Component class, accessed via kf.app.page.getComponent()."
+---
+
+A `Component` instance represents a UI component on a Kissflow page or popup. Obtain one using [`kf.app.page.getComponent(id)`](/api/page#getcomponent) or [`kf.app.page.popup.getComponent(id)`](/api/popup#getcomponent).
+
+```javascript
+const component = await kf.app.page.getComponent('componentId')
+console.log(component._id)
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `_id` | `string` | The ID of this component. |
+
+## Methods
+
+### onMount
+
+Register a callback that fires when the component finishes mounting. Any component-specific setup — including calling component-specific methods — must happen inside this callback.
+
+<ParamField path="callback" type="Function" required>
+  A function to invoke once the component is mounted. Fires once per mount.
+</ParamField>
+
+```javascript
+const component = await kf.app.page.getComponent('componentId')
+
+component.onMount(() => {
+  // Safe to call component-specific methods here
+  component.setActiveTab(2)
+})
+```
+
+<Note>
+  Component-specific methods (such as `setActiveTab`) must be called inside `onMount`. Calling them before the component has mounted will have no effect.
+</Note>
+
+---
+
+### refresh
+
+Refresh the component, triggering a re-render.
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the component has been refreshed.
+</ResponseField>
+
+```javascript
+const component = await kf.app.page.getComponent('componentId')
+await component.refresh()
+```
+
+---
+
+### show
+
+<Warning>
+  `show()` is deprecated. Use condition-based visibility in the Kissflow app builder instead.
+</Warning>
+
+Show a previously hidden component.
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the component is visible.
+</ResponseField>
+
+```javascript
+await component.show()
+```
+
+---
+
+### hide
+
+<Warning>
+  `hide()` is deprecated. Use condition-based visibility in the Kissflow app builder instead.
+</Warning>
+
+Hide the component.
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the component is hidden.
+</ResponseField>
+
+```javascript
+await component.hide()
+```
+
+---
+
+## Component-specific methods
+
+Some component types register additional methods on the `Component` instance automatically, based on their type. These methods are dynamically added when you call `getComponent()` and must always be called inside `onMount`.
+
+### Tab component — setActiveTab
+
+Set the active tab on a Tab component. Tab numbers are 1-indexed.
+
+<ParamField path="tabNumber" type="number" required>
+  The 1-based index of the tab to activate.
+</ParamField>
+
+```javascript
+const tabComponent = await kf.app.page.getComponent('tabComponentId')
+
+tabComponent.onMount(() => {
+  tabComponent.setActiveTab(2) // activates the second tab
+})
+```
+
+---
+
+## CustomComponent context
+
+When writing code inside a **custom component** itself, `kf.context` returns a `CustomComponent` instance. Use `watchParams` to react to parameter changes pushed from the Kissflow app.
+
+### watchParams
+
+Listen for changes to the parameters passed into this custom component from the app.
+
+<ParamField path="callback" type="(data: any) => void" required>
+  A function invoked each time the component's parameters are updated. Receives the latest parameter values as its argument.
+</ParamField>
+
+```javascript
+kf.context.watchParams(function (data) {
+  console.log('New params:', data)
+  // Update your component UI with the new data
+})
+```
+
+<Note>
+  `watchParams` fires on every parameter update for the lifetime of the component, not just once.
+</Note>

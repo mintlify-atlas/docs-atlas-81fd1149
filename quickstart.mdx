@@ -1,80 +1,101 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Build and run your first Kissflow custom component in five steps."
 ---
 
-## Get started in three steps
-
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
-
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  The SDK can only be initialized when running inside the Kissflow platform as an embedded custom component (iframe context). Calling `KFSDK.initialize()` outside of Kissflow will return a rejected Promise.
 </Note>
+
+<Steps>
+  <Step title="Scaffold a project">
+    Use the `create-kf-component` CLI to generate a ready-to-use project skeleton. Run the following command and follow the prompts to choose a framework and project name:
+
+    ```bash
+    npm create kf-component
+    ```
+
+    The CLI requires Node.js `>=18.14.1`. It creates a minimal frontend project pre-wired for Kissflow with a dev server, build config, and a sample entry point.
+  </Step>
+
+  <Step title="Install the SDK">
+    Inside your new project directory, install the SDK:
+
+    ```bash
+    npm install @kissflow/lowcode-client-sdk
+    ```
+
+    If you scaffolded with `create-kf-component`, the SDK is already listed as a dependency — just run `npm install`.
+  </Step>
+
+  <Step title="Initialize the SDK">
+    Import the SDK and call `KFSDK.initialize()`. Initialization is asynchronous and returns a Promise that resolves to the `kf` object.
+
+    ```javascript
+    import KFSDK from '@kissflow/lowcode-client-sdk'
+
+    let kf
+    ;(async function () {
+        kf = await KFSDK.initialize()
+    })()
+    ```
+
+    After this call, `kf` is fully set up and every namespace (`kf.context`, `kf.app`, `kf.client`, etc.) is available.
+  </Step>
+
+  <Step title="Read user info and interact with form fields">
+    Access the authenticated user's details directly from the `kf.user` object:
+
+    ```javascript
+    const { Name, Email, _id, AppRoles } = kf.user
+    console.log(`Logged in as ${Name} (${Email})`)
+    ```
+
+    Read and update form fields using `kf.context`:
+
+    ```javascript
+    // Read the current value of a field
+    const currentValue = await kf.context.getField('fieldId')
+    console.log('Field value:', currentValue)
+
+    // Update one or more fields
+    await kf.context.updateField({
+        fieldId: 'new value',
+        anotherFieldId: 42,
+    })
+    ```
+  </Step>
+
+  <Step title="Show a UI toast">
+    Use `kf.client.showInfo()` to display a toast notification inside the Kissflow UI:
+
+    ```javascript
+    kf.client.showInfo('Component loaded successfully!')
+    ```
+
+    You can also prompt the user with a confirmation dialog:
+
+    ```javascript
+    const action = await kf.client.showConfirm({
+        title: 'Confirm action',
+        content: 'Are you sure you want to proceed?',
+    })
+
+    if (action === 'OK') {
+        // user confirmed
+    } else {
+        // user cancelled
+    }
+    ```
+  </Step>
+</Steps>
+
+## What's next?
+
+Now that your component is running, explore the full SDK surface:
+
+- Use `kf.app.getVariable` / `kf.app.setVariable` to read and write app-level state
+- Use `kf.app.openPage(pageId)` to navigate between pages
+- Use `kf.context.getTable(tableId)` to work with form tables and their rows
+- Use `kf.formatter` to convert raw strings to Kissflow-typed values
+- Use `kf.api(url, config)` to make authenticated HTTP calls

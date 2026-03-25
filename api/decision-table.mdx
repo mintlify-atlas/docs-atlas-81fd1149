@@ -1,0 +1,51 @@
+---
+title: "Decision Table"
+description: "API reference for the DecisionTable class, used to evaluate decision tables from custom components."
+---
+
+The `DecisionTable` class lets you programmatically evaluate a Kissflow decision table with an optional input payload.
+
+## Get a DecisionTable instance
+
+```javascript
+const dt = kf.app.getDecisionTable('flow_id')
+```
+
+---
+
+## Methods
+
+### evaluate
+
+```javascript
+dt.evaluate(payload?: object): Promise<any>
+```
+
+Evaluates the decision table against an optional input payload and returns the result.
+
+#### Parameters
+
+<ParamField path="payload" type="object">
+  Input data to evaluate the decision table against. Each key corresponds to an input field defined in the decision table.
+</ParamField>
+
+#### Returns
+
+<ResponseField name="result" type="any">
+  The evaluation result produced by the decision table.
+</ResponseField>
+
+#### Example
+
+```javascript
+const dt = kf.app.getDecisionTable('my_decision_table_id')
+
+// Without payload
+const result = await dt.evaluate()
+
+// With payload
+const result = await dt.evaluate({
+  field1: 'value1',
+  field2: 100
+})
+```

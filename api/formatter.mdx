@@ -1,0 +1,140 @@
+---
+title: "Formatter (kf.formatter)"
+description: "Reference for the Formatter class, accessed via kf.formatter."
+---
+
+`kf.formatter` converts raw values into formats that Kissflow fields expect. All methods return Promises.
+
+## Methods
+
+### toDate
+
+Convert a date string to Kissflow date format.
+
+<ParamField path="date" type="string" required>
+  The date string to convert.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;string&gt;">
+  Resolves to the date in Kissflow's expected format.
+</ResponseField>
+
+```javascript
+// Promise style
+kf.formatter.toDate('08-24-2021').then((res) => {
+  console.log(res)
+})
+
+// async/await style
+const value = await kf.formatter.toDate('08-24-2021')
+```
+
+---
+
+### toDateTime
+
+Convert a datetime string to Kissflow datetime format.
+
+<ParamField path="date" type="string" required>
+  The datetime string to convert.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;string&gt;">
+  Resolves to the datetime in Kissflow's expected format.
+</ResponseField>
+
+```javascript
+// Promise style
+kf.formatter.toDateTime('2021-08-26T14:30').then((res) => {
+  console.log(res)
+})
+
+// async/await style
+const value = await kf.formatter.toDateTime('2021-08-26T14:30')
+```
+
+---
+
+### toNumber
+
+Convert a number string (including locale-formatted strings with commas) to a Kissflow number value.
+
+<ParamField path="value" type="string" required>
+  The number string to convert. Commas are handled automatically.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;number&gt;">
+  Resolves to the parsed number.
+</ResponseField>
+
+```javascript
+// Promise style
+kf.formatter.toNumber('1,00,000.500000').then((res) => {
+  console.log(res)
+})
+
+// async/await style
+const value = await kf.formatter.toNumber('1,00,000.500000')
+```
+
+---
+
+### toCurrency
+
+Convert a value to Kissflow currency format using an ISO currency code.
+
+<ParamField path="value" type="string" required>
+  The numeric value string to convert.
+</ParamField>
+
+<ParamField path="currencyCode" type="string" required>
+  The ISO 4217 currency code (e.g., `"USD"`, `"EUR"`, `"INR"`).
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;string&gt;">
+  Resolves to the currency value in Kissflow's expected format.
+</ResponseField>
+
+```javascript
+// Promise style
+kf.formatter.toCurrency('1,00,000.500000', 'USD').then((res) => {
+  console.log(res)
+})
+
+// async/await style
+const value = await kf.formatter.toCurrency('1,00,000.500000', 'USD')
+```
+
+---
+
+### toBoolean
+
+Convert a string to a Kissflow boolean value.
+
+<ParamField path="value" type="string" required>
+  The string to convert. See accepted values below.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;boolean&gt;">
+  Resolves to `true` or `false`.
+</ResponseField>
+
+| Input string | Result |
+| --- | --- |
+| `"yes"`, `"1"`, `"true"` | `true` |
+| `"no"`, `"0"`, `"false"` | `false` |
+
+```javascript
+// Promise style
+kf.formatter.toBoolean('yes').then((res) => {
+  console.log(res) // true
+})
+
+// async/await style
+const a = await kf.formatter.toBoolean('yes')    // true
+const b = await kf.formatter.toBoolean('1')      // true
+const c = await kf.formatter.toBoolean('true')   // true
+const d = await kf.formatter.toBoolean('no')     // false
+const e = await kf.formatter.toBoolean('0')      // false
+const f = await kf.formatter.toBoolean('false')  // false
+```

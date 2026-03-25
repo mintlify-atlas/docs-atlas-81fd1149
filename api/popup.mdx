@@ -1,0 +1,119 @@
+---
+title: "Popup (kf.app.page.popup)"
+description: "Reference for the Popup class, accessed via kf.app.page.popup."
+---
+
+`kf.app.page.popup` is the active `Popup` instance on the current page. You can also receive a `Popup` instance from [`kf.app.page.openPopup()`](/api/page#openpopup).
+
+```javascript
+// Access the active popup's ID
+console.log(kf.app.page.popup._id)
+```
+
+## Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `_id` | `string` | The ID of this popup. |
+
+## Methods
+
+### getParameter
+
+Get the value of a single popup input parameter.
+
+<ParamField path="key" type="string" required>
+  The ID of the popup parameter to retrieve.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;any&gt;">
+  Resolves to the value of the specified parameter.
+</ResponseField>
+
+```javascript
+const value = await kf.app.page.popup.getParameter('parameterId')
+console.log(value)
+```
+
+---
+
+### getAllParameters
+
+Get all popup input parameters as a single object.
+
+<ResponseField name="returns" type="Promise&lt;object&gt;">
+  Resolves to an object where each key is a parameter name and each value is its current value.
+</ResponseField>
+
+```javascript
+const allParams = await kf.app.page.popup.getAllParameters()
+// Returns:
+// {
+//   parameterName: "Sample value",
+//   parameterName2: "Sample value 2"
+// }
+```
+
+---
+
+### close
+
+Close the active popup.
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the popup has been closed.
+</ResponseField>
+
+```javascript
+// Close via the page's popup reference
+kf.app.page.popup.close()
+
+// Close using a stored popup instance
+const greetPopup = await kf.app.page.openPopup('greet_popup')
+greetPopup.close()
+```
+
+---
+
+### getComponent
+
+Get a `Component` instance inside this popup by component ID.
+
+<ParamField path="componentId" type="string" required>
+  The ID of the component inside the popup.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;Component&gt;">
+  Resolves to a [Component](/api/component) instance.
+</ResponseField>
+
+```javascript
+const component = await kf.app.page.popup.getComponent('componentId')
+
+component.onMount(() => {
+  component.refresh()
+})
+```
+
+## Example: passing and reading popup params
+
+Open a popup with parameters from a page script:
+
+```javascript
+// On the page — open the popup and pass input parameters
+kf.app.page.openPopup('confirm_popup', {
+  message: 'Are you sure you want to delete this record?',
+  recordId: 'ABC123'
+})
+```
+
+Inside the popup, read the parameters:
+
+```javascript
+// Inside the popup's script
+const message = await kf.app.page.popup.getParameter('message')
+const recordId = await kf.app.page.popup.getParameter('recordId')
+
+console.log(message)   // 'Are you sure you want to delete this record?'
+console.log(recordId)  // 'ABC123'
+```

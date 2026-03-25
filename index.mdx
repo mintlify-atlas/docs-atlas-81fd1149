@@ -1,97 +1,76 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Kissflow Lowcode JS SDK"
+description: "Build custom components and integrations on the Kissflow low-code platform with a powerful JavaScript SDK."
 ---
 
-## Setting up
+The Kissflow Lowcode JS SDK lets you extend Kissflow apps with custom components, automate form interactions, manage data, and integrate with external services — all from JavaScript or TypeScript.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get your first custom component running in minutes
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Installation" icon="download" href="/installation">
+    Install via npm or load from a CDN script tag
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Core Concepts" icon="lightbulb" href="/concepts/sdk-initialization">
+    Understand initialization, contexts, and the SDK lifecycle
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API Reference" icon="code" href="/api/initialize">
+    Full reference for every method, class, and type
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Get started in three steps
 
-Everything you need to create world-class documentation.
+<Steps>
+  <Step title="Install the SDK">
+    Add the SDK to your project using npm, or load it directly via a `<script>` tag in HTML.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+    ```bash
+    npm install @kissflow/lowcode-client-sdk
+    ```
+  </Step>
+  <Step title="Initialize">
+    Call `KFSDK.initialize()` inside your component to get the `kf` instance. This must run inside the Kissflow platform iframe.
 
-## Need inspiration?
+    ```javascript
+    import KFSDK from '@kissflow/lowcode-client-sdk'
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+    let kf
+    ;(async function () {
+      kf = await KFSDK.initialize()
+    })()
+    ```
+  </Step>
+  <Step title="Start building">
+    Access forms, pages, components, and more through the `kf` object.
+
+    ```javascript
+    // Read current user details
+    const { Name, Email, AppRoles } = kf.user
+
+    // Get a form field value
+    const value = await kf.context.getField('fieldId')
+
+    // Show a toast notification
+    kf.client.showInfo('Hello from your custom component!')
+    ```
+  </Step>
+</Steps>
+
+## What you can build
+
+<CardGroup cols={2}>
+  <Card title="Form interactions" icon="file-pen" href="/guides/working-with-forms">
+    Read and write form fields, serialize form data to JSON, and react to field changes
+  </Card>
+  <Card title="Table management" icon="table" href="/guides/working-with-tables">
+    Add, delete, and query rows in form child tables
+  </Card>
+  <Card title="Page and popup control" icon="window-restore" href="/guides/managing-pages-popups">
+    Navigate between pages, open popups, and pass parameters
+  </Card>
+  <Card title="Data management" icon="database" href="/guides/data-management">
+    Import CSV files, open forms for dataforms, boards, and processes
+  </Card>
+</CardGroup>

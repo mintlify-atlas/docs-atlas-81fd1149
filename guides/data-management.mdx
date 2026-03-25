@@ -1,0 +1,207 @@
+---
+title: "Data Management"
+description: "Work with Dataforms, Boards, Processes, and Decision Tables from custom component code using kf.app."
+---
+
+Kissflow apps can contain several data-oriented building blocks: Dataforms for structured data entry, Boards for case management, Processes for workflow automation, and Decision Tables for rule-based logic. The SDK exposes each of these as a typed instance you retrieve from `kf.app`.
+
+## Dataform
+
+A Dataform gathers and stores records. Use `kf.app.getDataform` with the Dataform's flow ID to get an instance.
+
+```javascript
+const dfInstance = kf.app.getDataform('dataform_id')
+```
+
+### Import CSV
+
+`importCSV` opens the CSV import popup, where users can upload a file and map its columns to Dataform fields. Optionally pass `defaultValues` to pre-populate fields that are hidden from the user.
+
+```javascript
+// Open the CSV importer with no defaults
+dfInstance.importCSV()
+
+// Pre-populate hidden fields
+let defaultValues = { fieldId: 'value' }
+dfInstance.importCSV(defaultValues)
+```
+
+**Practical example** — pre-populate a hidden `Location` field so every imported record is tagged automatically:
+
+```javascript
+// Get the dataform using its flow_id
+const dfInstance = kf.app.getDataform('Product_Dataform_A00')
+
+// Location is the field_id of a hidden field inside the dataform
+const defaultValues = { location: 'India' }
+
+// Every record imported through this popup will have Location = 'India'
+dfInstance.importCSV(defaultValues)
+```
+
+<Note>
+  Default values are optional. You can also pass app variables or page parameters as values. Fields such as auto-calculated fields and sequence numbers cannot be set as default values. Once a default value is set, end users cannot override it during import.
+</Note>
+
+### Open a record form
+
+`openForm` opens the edit form for a specific Dataform record. Pass the record's `_id`.
+
+```javascript
+dfInstance.openForm({ _id: 'instanceId' })
+```
+
+<Note>
+  `_id` is required. The call will reject with an error message if it is omitted.
+</Note>
+
+## Board
+
+Boards are used for case management and visual workflow tracking. Use `kf.app.getBoard` with the Board's case ID.
+
+```javascript
+const boardInstance = kf.app.getBoard('case_id')
+```
+
+### Import CSV
+
+Behaves the same as the Dataform CSV importer — opens a modal for uploading and mapping a CSV file.
+
+```javascript
+// Open the CSV importer with no defaults
+boardInstance.importCSV()
+
+// Pre-populate hidden fields
+const defaultValues = { fieldId: 'value' }
+boardInstance.importCSV(defaultValues)
+```
+
+**Practical example** — tag all imported board items with a location:
+
+```javascript
+// Get the board using its flow_id
+const boardInstance = kf.app.getBoard('Asset_Tracking_A00')
+
+// Location is the field_id of a hidden field inside the board
+const defaultValues = { location: 'India' }
+
+// All records imported through this modal will have Location = 'India'
+boardInstance.importCSV(defaultValues)
+```
+
+<Note>
+  The same default-values rules apply as for Dataforms: values are optional, variables and parameters are supported, and auto-calculated fields and sequence numbers cannot be used as defaults.
+</Note>
+
+### Open a board item form
+
+`openForm` opens the form for a specific board item. Pass both `_id` and `_view_id`.
+
+```javascript
+boardInstance.openForm({ _id: 'itemId', _view_id: 'viewId' })
+```
+
+<Note>
+  `_id` is required. The call will reject with an error if `_id` is missing.
+</Note>
+
+## Process
+
+Processes model multi-step approval or workflow scenarios. Use `kf.app.getProcess` with the Process's flow ID.
+
+```javascript
+const processInstance = kf.app.getProcess('flow_id')
+```
+
+### Open a process form
+
+`openForm` opens a specific activity instance form within a process. Both `_id` (the process instance ID) and `_activity_instance_id` (the specific activity instance ID) are required.
+
+```javascript
+processInstance.openForm({
+  _id: 'instanceId',
+  _activity_instance_id: 'activityInstanceId'
+})
+```
+
+<Warning>
+  Both `_id` and `_activity_instance_id` are required. The call will reject with an error if either is missing.
+</Warning>
+
+## Decision Table
+
+Decision Tables evaluate a set of input values against predefined rules and return a result. Use `kf.app.getDecisionTable` with the Decision Table's flow ID.
+
+```javascript
+const dt = kf.app.getDecisionTable('flow_id')
+```
+
+### Evaluate
+
+Call `evaluate` with an optional payload object. It returns a Promise that resolves to the rule evaluation result.
+
+```javascript
+// Evaluate with no input payload
+const result = await dt.evaluate()
+
+// Evaluate with an input payload
+const result = await dt.evaluate({
+  country: 'India',
+  orderValue: 5000
+})
+
+console.log('Decision result:', result)
+```
+
+## Complete example
+
+The following example demonstrates retrieving results from a Decision Table and then opening a matching Dataform record.
+
+```javascript
+async function applyDiscount(orderId, country, orderValue) {
+  // Step 1: Evaluate the discount decision table
+  const dt = kf.app.getDecisionTable('Discount_Rules_A00')
+  const result = await dt.evaluate({ country, orderValue })
+  console.log('Discount tier:', result.discountTier)
+
+  // Step 2: Open the order's Dataform record for review
+  const dfInstance = kf.app.getDataform('Orders_Dataform_A00')
+  dfInstance.openForm({ _id: orderId })
+}
+
+applyDiscount('order_xyz', 'India', 5000)
+```
+
+## API reference
+
+### Dataform
+
+| Method | Returns | Description |
+|---|---|---|
+| `kf.app.getDataform(flowId)` | `Dataform` | Returns a `Dataform` instance for the given flow ID. |
+| `dfInstance.importCSV(defaultValues?)` | `Promise<void>` | Opens the CSV import popup. `defaultValues` is optional. |
+| `dfInstance.openForm({ _id })` | `Promise<void>` | Opens the edit form for the specified record. `_id` is required. |
+
+### Board
+
+| Method | Returns | Description |
+|---|---|---|
+| `kf.app.getBoard(caseId)` | `Board` | Returns a `Board` instance for the given case ID. |
+| `boardInstance.importCSV(defaultValues?)` | `Promise<void>` | Opens the CSV import modal. `defaultValues` is optional. |
+| `boardInstance.openForm({ _id, _view_id })` | `Promise<void>` | Opens the form for the specified board item. `_id` is required. |
+
+### Process
+
+| Method | Returns | Description |
+|---|---|---|
+| `kf.app.getProcess(flowId)` | `Process` | Returns a `Process` instance for the given flow ID. |
+| `processInstance.openForm({ _id, _activity_instance_id })` | `Promise<void>` | Opens the activity form. Both fields are required. |
+
+### Decision Table
+
+| Method | Returns | Description |
+|---|---|---|
+| `kf.app.getDecisionTable(flowId)` | `DecisionTable` | Returns a `DecisionTable` instance for the given flow ID. |
+| `dt.evaluate(payload?)` | `Promise<any>` | Evaluates rules against the optional input payload and returns the result. |
+
+See also the [Application API reference](/api/application).

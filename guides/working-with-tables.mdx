@@ -1,0 +1,248 @@
+---
+title: "Working with Tables"
+description: "Add, delete, and read rows from child tables inside Kissflow forms using the Table and TableForm APIs."
+---
+
+Kissflow forms can contain child tables — grids of structured rows embedded within the form. The SDK exposes a `Table` class for bulk operations like adding and deleting rows, and a `TableForm` class for reading or updating the data of individual rows.
+
+## Getting a table instance
+
+Call `kf.context.getTable` with the table's field ID to get a `Table` instance. You must be running inside a form context for this to work.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+```
+
+## Adding rows
+
+### Add a single row
+
+Use `addRow` to append one row to the table. Pass an object whose keys are column IDs.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+await table.addRow({ Product: 'Laptop', Quantity: 2, Price: 999.99 })
+```
+
+### Add multiple rows
+
+Use `addRows` to append several rows in a single operation. Pass an array of row objects.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+
+let accumulator = []
+someArrayOfObjects.forEach(function (rowDetail) {
+  accumulator.push({
+    Product: rowDetail.product,
+    Quantity: rowDetail.qty,
+    Price: rowDetail.price
+  })
+})
+
+await table.addRows(accumulator)
+```
+
+<Note>
+  Use `addRows` instead of calling `addRow` in a loop. A single `addRows` call is more efficient and avoids multiple round-trips to the platform.
+</Note>
+
+## Deleting rows
+
+### Delete a single row
+
+Use `deleteRow` with the row's ID.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+await table.deleteRow('row_abc123')
+```
+
+### Delete multiple rows
+
+Use `deleteRows` with an array of row IDs.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+await table.deleteRows(['row_abc123', 'row_def456', 'row_ghi789'])
+```
+
+<Note>
+  Prefer `deleteRows` over calling `deleteRow` in a loop for bulk removals.
+</Note>
+
+## Reading rows
+
+### Get all rows
+
+`getRows` returns a Promise that resolves to an array of `TableForm` instances — one per row.
+
+```javascript
+const rows = await kf.context.getTable('Line_Items').getRows()
+```
+
+### Get a specific row
+
+`getRow` returns a `TableForm` instance for the row with the given ID. This does not make an async call.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+const row = table.getRow('row_abc123')
+```
+
+### Get selected rows
+
+`getSelectedRows` returns a Promise that resolves to an array of plain objects representing the rows currently selected in the table UI.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+const selectedRows = await table.getSelectedRows()
+```
+
+Example output:
+
+```json
+[
+  {
+    "Untitled_Field": "row 1",
+    "_created_at": "2022-03-01T03:04:09Z",
+    "_flow_name": "form events",
+    "_id": "Pk4_T1WGWuMe",
+    "_modified_at": "2022-03-01T03:04:09Z"
+  },
+  {
+    "Untitled_Field": "row 2",
+    "_created_at": "2022-03-01T03:04:09Z",
+    "_flow_name": "form events",
+    "_id": "Pk4_T1WGWuMe",
+    "_modified_at": "2022-03-01T03:04:09Z"
+  }
+]
+```
+
+## Serializing a table to JSON
+
+`toJSON` returns a Promise that resolves to an array of plain objects — one per row.
+
+```javascript
+const json = await kf.context.getTable('Line_Items').toJSON()
+console.log(json)
+```
+
+Example output:
+
+```json
+[
+  {
+    "Untitled_Field": "row 1",
+    "_created_at": "2022-03-01T03:04:09Z",
+    "_flow_name": "form events",
+    "_id": "Pk4_T1WGWuMe",
+    "_modified_at": "2022-03-01T03:04:09Z"
+  },
+  {
+    "Untitled_Field": "row 2",
+    "_created_at": "2022-03-01T03:04:09Z",
+    "_flow_name": "form events",
+    "_id": "Pk4_T1WGWuMe",
+    "_modified_at": "2022-03-01T03:04:09Z"
+  }
+]
+```
+
+## Working with individual rows (TableForm)
+
+A `TableForm` instance represents a single table row and exposes the same field-level API as a `Form`.
+
+### Read a field value
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+const row = table.getRow('row_abc123')
+const qty = await row.getField('Quantity')
+```
+
+### Update a field value
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+const row = table.getRow('row_abc123')
+await row.updateField({ Quantity: 10, Price: 799.99 })
+```
+
+### Navigate to the parent form
+
+`getParent` returns the parent `Form` instance so you can read or update fields on the main form from within a row context.
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+const row = table.getRow('row_abc123')
+
+const mainForm = row.getParent()
+await mainForm.updateField({ Total: 1599.98 })
+```
+
+### Serialize a row to JSON
+
+```javascript
+const table = kf.context.getTable('Line_Items')
+const row = table.getRow('row_abc123')
+const json = await row.toJSON()
+```
+
+Example output:
+
+```json
+{
+  "Untitled_Field": "testing",
+  "_created_at": "2022-03-01T03:04:09Z",
+  "_flow_name": "form events",
+  "_id": "Pk4_T1WGWuMe",
+  "_modified_at": "2022-03-01T03:04:09Z"
+}
+```
+
+## Complete example
+
+The following example reads the selected rows from a table, doubles the `Quantity` column on each one, and writes the results back.
+
+```javascript
+async function doubleSelectedQuantities() {
+  const table = kf.context.getTable('Line_Items')
+  const selected = await table.getSelectedRows()
+
+  for (const rowData of selected) {
+    const row = table.getRow(rowData._id)
+    const currentQty = await row.getField('Quantity')
+    await row.updateField({ Quantity: currentQty * 2 })
+  }
+}
+
+doubleSelectedQuantities()
+```
+
+## API reference
+
+### Table
+
+| Method | Returns | Description |
+|---|---|---|
+| `table.addRow(rowObject)` | `Promise<void>` | Appends a single row. |
+| `table.addRows(rows)` | `Promise<void>` | Appends multiple rows. Preferred for bulk inserts. |
+| `table.deleteRow(rowId)` | `Promise<void>` | Deletes a single row by ID. |
+| `table.deleteRows(rowIds)` | `Promise<void>` | Deletes multiple rows by ID. Preferred for bulk deletes. |
+| `table.getRow(rowId)` | `TableForm` | Returns a `TableForm` instance for the given row. |
+| `table.getRows()` | `Promise<TableForm[]>` | Returns all rows as `TableForm` instances. |
+| `table.getSelectedRows()` | `Promise<object[]>` | Returns currently selected rows as plain objects. |
+| `table.toJSON()` | `Promise<object[]>` | Returns all rows as an array of plain objects. |
+
+### TableForm
+
+| Method | Returns | Description |
+|---|---|---|
+| `row.getField(fieldId)` | `Promise<any>` | Returns the current value of the field. |
+| `row.updateField(fields)` | `Promise<void>` | Updates one or more fields on this row. |
+| `row.getParent()` | `Form` | Returns the parent `Form` instance. |
+| `row.toJSON()` | `Promise<object>` | Returns this row's data as a plain object. |
+
+See also [Working with Forms](/guides/working-with-forms) and the [Context API reference](/api/context).

@@ -1,0 +1,58 @@
+---
+title: "Introduction"
+description: "The Kissflow Lowcode JS SDK lets you build custom components that run inside Kissflow apps, giving them full access to app data, user context, and platform UI."
+---
+
+## What is the Kissflow Lowcode JS SDK?
+
+The Kissflow Lowcode JS SDK is a JavaScript library that bridges custom components and the Kissflow platform. When you embed a custom component inside a Kissflow app, the SDK gives that component a secure, structured API to read and write form fields, interact with app variables, display UI feedback, format data, and more — all without leaving the Kissflow environment.
+
+The SDK is published on npm as [`@kissflow/lowcode-client-sdk`](https://www.npmjs.com/package/@kissflow/lowcode-client-sdk) and can also be loaded directly from a CDN in plain HTML pages.
+
+## Why use it?
+
+Kissflow apps are built on a low-code platform, but real-world requirements often exceed what drag-and-drop builders can express. The SDK gives developers the escape hatch they need:
+
+- Read and update form fields and table rows from JavaScript
+- Respond to changes in parameters passed to a custom component
+- Get information about the authenticated user and their app roles
+- Trigger platform UI actions like toasts and confirmation dialogs
+- Navigate between pages and open popups programmatically
+- Make authenticated API calls to Kissflow and external services
+
+## The `kf` object
+
+After initialization, `KFSDK.initialize()` returns a `kf` object. Every feature of the SDK is accessible through namespaces on this object:
+
+| Namespace | Description |
+|---|---|
+| `kf.context` | Interact with the current form, table row, or custom component context |
+| `kf.app` | Access and modify app-level variables, open pages, and get dataform or board instances |
+| `kf.client` | Show toasts, confirmation dialogs, and redirect the browser |
+| `kf.formatter` | Convert raw values to Kissflow-formatted dates, numbers, currencies, and booleans |
+| `kf.user` | Read the authenticated user's name, email, ID, and app roles |
+| `kf.account` | Read the current account ID via `kf.account._id` |
+
+## Scaffolding with `create-kf-component`
+
+The fastest way to start a new custom component project is the `create-kf-component` CLI. It scaffolds a minimal frontend project pre-configured to work with Kissflow:
+
+```bash
+npm create kf-component
+```
+
+The CLI requires Node.js `>=18.14.1`.
+
+## Next steps
+
+<CardGroup cols={3}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Build and run your first custom component in minutes.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    All installation methods: npm, CDN script tag, and the CLI scaffolder.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/initialize">
+    Full reference for every namespace and method on the `kf` object.
+  </Card>
+</CardGroup>

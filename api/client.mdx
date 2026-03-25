@@ -1,0 +1,95 @@
+---
+title: "Client (kf.client)"
+description: "Reference for the Client class, accessed via kf.client."
+---
+
+`kf.client` provides UI-level interactions with the Kissflow app shell — showing notifications, confirmation dialogs, and performing navigation.
+
+## Methods
+
+### showInfo
+
+Display a toast notification to the user.
+
+<ParamField path="message" type="string | object" required>
+  The message to display. Can be a plain string or an object.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the notification has been shown.
+</ResponseField>
+
+```javascript
+kf.client.showInfo('Operation complete!')
+```
+
+---
+
+### showConfirm
+
+Display a confirmation dialog and wait for the user's response.
+
+<ParamField path="args" type="object" required>
+  Configuration object for the dialog.
+</ParamField>
+
+<ParamField path="args.title" type="string" required>
+  The dialog title.
+</ParamField>
+
+<ParamField path="args.content" type="string" required>
+  The dialog body text.
+</ParamField>
+
+<ParamField path="args.okText" type="string" default="Ok">
+  Label for the confirm button.
+</ParamField>
+
+<ParamField path="args.cancelText" type="string" default="Cancel">
+  Label for the cancel button.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;string&gt;">
+  Resolves to `"OK"` if the user clicked the confirm button, or another value if they cancelled or dismissed the dialog.
+</ResponseField>
+
+```javascript
+// Promise style
+kf.client.showConfirm({ title: 'Delete?', content: 'Are you sure?' }).then((action) => {
+  if (action === 'OK') {
+    // user clicked the OK button
+  } else {
+    // user clicked cancel or dismissed
+  }
+})
+
+// async/await style
+const action = await kf.client.showConfirm({
+  title: 'Delete record?',
+  content: 'This action cannot be undone.',
+  okText: 'Delete',
+  cancelText: 'Keep'
+})
+
+if (action === 'OK') {
+  // proceed with deletion
+}
+```
+
+---
+
+### redirect
+
+Redirect the browser to a URL.
+
+<ParamField path="url" type="string" required>
+  The URL to navigate to.
+</ParamField>
+
+<ResponseField name="returns" type="Promise&lt;void&gt;">
+  Resolves when the redirect is initiated.
+</ResponseField>
+
+```javascript
+kf.client.redirect('https://example.com')
+```
